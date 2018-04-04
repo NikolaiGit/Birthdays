@@ -1,0 +1,14 @@
+#execute with strg + alt + r
+
+GET http://localhost:9090/birthdays/health HTTP/1.1
+
+#GET http://localhost:9090/birthdays/save HTTP/1.1
+
+
+#POST http://localhost/birthdays/save HTTP/1.1
+#content-type: application/json
+#
+#{
+#    "name": "Nikolai",
+#    "Birthday": "08.12.1996"
+#}
