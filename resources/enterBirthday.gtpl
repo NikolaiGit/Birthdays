@@ -20,14 +20,14 @@
         <form action="/birthdays/save" method="post">
             <div class="form-group">
                 <label for="name">Name</label>
-                <input type="text" class="form-control" id="name" aria-describedby="nameHelp" placeholder="Gebe hier den Namen ein">
+                <input type="text" class="form-control" name = "name" id="name" aria-describedby="nameHelp" placeholder="Gebe hier den Namen ein">
                 <small id="nameHelp" class="form-text text-muted">Vorname Nachname</small>
             </div>
             <div class="form-group">
                 <label for="birthday">Geburtstag</label>
-                <input type="date" class="form-control" id="birthday" placeholder="Geburtstag">
+                <input type="date" class="form-control" name="birthday" id="birthday" placeholder="Geburtstag">
             </div>
-            <input type="submit" class="btn btn-primary">Speichern</button>
+            <input type="submit" class="btn btn-primary" value="Speichern">
         </form>
 
 

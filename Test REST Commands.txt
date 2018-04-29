@@ -1,9 +1,12 @@
 #execute with strg + alt + r
 
-GET http://localhost:9090/birthdays/health HTTP/1.1
+#GET http://localhost:9090/birthdays/health HTTP/1.1
 
 #GET http://localhost:9090/birthdays/save HTTP/1.1
 
+#GET http://localhost:9090/birthdays/get HTTP/1.1
+
+curl --header "Authorization: Bearer ce0bc6f9ff67b94041d4870d7043ccf2bdbe24ea" http://api.github.com/user 
 
 #POST http://localhost/birthdays/save HTTP/1.1
 #content-type: application/json
