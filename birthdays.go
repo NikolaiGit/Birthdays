@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"os"
 
 	"github.com/justinas/alice"
 	log "github.com/sirupsen/logrus"
+	githuboauth "golang.org/x/oauth2/github"
 )
 
 //MyLogFormatter ist ein Objekt für das Logging Libary logrus, in welchem eine eigene Timezone gesetzt werden kann
@@ -73,9 +75,14 @@ func (v ContextValue) Set(value string) {
 }
 
 func main() {
+	fmt.Print(githuboauth.Endpoint.AuthURL)
+	fmt.Print(githuboauth.Endpoint.TokenURL)
 	//http.ListenAndServe(":9090", &MyMux{})
 	log.Info("Applikation hört auf :9090")
-	http.Handle("/", alice.New(requireTokenAuthentication).ThenFunc(muxer))
+	//mit oauth-Login-Handler
+	//http.Handle("/", alice.New(requireTokenAuthentication).ThenFunc(muxer))
+	//ohne oauth-Login-Handler
+	http.Handle("/", alice.New(getAuthenticationInformation).ThenFunc(muxer))
 	http.ListenAndServe(":9090", nil)
 
 }

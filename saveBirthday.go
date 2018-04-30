@@ -57,7 +57,7 @@ func saveBirthdayReturnFormHTML(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println(t.Execute(w, nil))
+	t.Execute(w, nil)
 }
 
 func saveBirthdayResponse(w http.ResponseWriter, r *http.Request, b Birthday) {
