@@ -1,10 +1,10 @@
 package main
 
 import (
-	"fmt"
 	"net/http"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
@@ -22,9 +22,7 @@ var (
 //hier redirect auf Callback
 //und in callback redirect parameer auf ursprüngliche url
 func githubLogin(w http.ResponseWriter, r *http.Request) {
-	if debug {
-		fmt.Println("githubLogin()")
-	}
+	log.Debug("Methode: githubLogin()")
 	url := oauthGithubConf.AuthCodeURL(oauthStateString, oauth2.AccessTypeOnline)
 
 	//füge ein URL Parameter hinzu
@@ -45,40 +43,33 @@ func githubLogin(w http.ResponseWriter, r *http.Request) {
 
 	*/
 	url = url + "&redirect_uri=" + "http://localhost:9090/birthdays/githubCallback"
-	fmt.Println("neue URL: " + url)
+	log.Info("Redirect auf " + url)
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 // /github_oauth_cb. Called by github after authorization is granted
 func githubCallback(w http.ResponseWriter, r *http.Request) {
-	if debug {
-		fmt.Println("githubCallback()")
-	}
+	log.Debug("Methode: githubCallback()")
 	//check CSRF
 	state := r.FormValue("state")
-	if debug {
-		fmt.Println("state: " + state)
-	}
+	log.Debug("state: " + state)
+
 	if state != oauthStateString {
-		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
+		log.Error("invalid oauth state, expected '%s', got '%s'\n", oauthStateString, state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
 
 	//get token for code
 	code := r.FormValue("code")
-	if debug {
-		fmt.Println("code: " + code)
-	}
+	log.Debug("code: " + code)
 	token, err := oauthGithubConf.Exchange(oauth2.NoContext, code)
 	if err != nil {
-		fmt.Printf("oauthGithubConf.Exchange() failed with '%s'\n", err)
+		log.Error("oauthGithubConf.Exchange() failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
-	if debug {
-		fmt.Println("token: " + token.TokenType + " " + token.AccessToken)
-	}
+	log.Debug("Token: " + token.TokenType + " " + token.AccessToken)
 
 	//TODO
 	// save the token in session
@@ -105,5 +96,6 @@ func githubCallback(w http.ResponseWriter, r *http.Request) {
 	//r.Header.Add("Cookie", `name2="quoted"`)
 
 	//Redirect auf Startseite -> /get
+	log.Info("Token von github erhalten und in Cookie token_values gespeichert -> leite nun auf /birthdays/get um")
 	http.Redirect(w, r, "/birthdays/get", http.StatusTemporaryRedirect)
 }

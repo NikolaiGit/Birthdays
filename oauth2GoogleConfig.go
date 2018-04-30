@@ -3,8 +3,9 @@ package main
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 
 	"golang.org/x/oauth2"
 	"google.golang.org/api/calendar/v3"
@@ -20,23 +21,18 @@ var (
 )
 
 func googleLogin(w http.ResponseWriter, r *http.Request) {
-	if debug {
-		fmt.Println("googleLogin()")
-	}
+	log.Debug("Methode: googleLogin()")
 	url := oauthGoogleConf.AuthCodeURL(oauthStateStringGoogle, oauth2.AccessTypeOnline)
 	url = url + "&redirect_uri=" + redirectURI
 	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 func googleCallback(w http.ResponseWriter, r *http.Request) {
-	if debug {
-		fmt.Println("googleCallback()")
-	}
+	log.Debug("Methode: googleCallback()")
 	//check CSRF
 	state := r.FormValue("state")
-	if debug {
-		fmt.Println("state: " + state)
-	}
+
+	log.Debug("state: " + state)
 	if state != oauthStateStringGoogle {
 		fmt.Printf("invalid oauth state, expected '%s', got '%s'\n", oauthStateStringGoogle, state)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
@@ -45,13 +41,9 @@ func googleCallback(w http.ResponseWriter, r *http.Request) {
 
 	//get token for code
 	code := r.FormValue("code")
-	if debug {
-		fmt.Println("code: " + code)
-	}
+	log.Debug("code: " + code)
 	token, err := oauthGoogleConf.Exchange(oauth2.NoContext, code)
-	if debug {
-		fmt.Println("token: " + token.TokenType + " " + token.AccessToken)
-	}
+	log.Debug("Token: " + token.TokenType + " " + token.AccessToken)
 	if err != nil {
 		fmt.Printf("oauthGoogleConf.Exchange() failed with '%s'\n", err)
 		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)

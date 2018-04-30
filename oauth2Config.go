@@ -2,29 +2,23 @@ package main
 
 import (
 	"context"
-	"crypto/rsa"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
-	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/google/go-github/github"
+	log "github.com/sirupsen/logrus"
 	"golang.org/x/oauth2"
 )
 
 var authServer = "Github"
 
-var (
-	jwtTestDefaultKey *rsa.PublicKey
-	defaultKeyFunc    jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return jwtTestDefaultKey, nil }
-	emptyKeyFunc      jwt.Keyfunc = func(t *jwt.Token) (interface{}, error) { return nil, nil }
-	nilKeyFunc        jwt.Keyfunc
-)
-
 //Nicht-Blatt-Handler
 func requireTokenAuthentication(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		log.Info(r.Method + "-Request auf " + r.URL.Path + " von " + r.RemoteAddr)
 
 		//keine Autorisierung für folgende Pfade nötig
 		if r.URL.Path == "/birthdays/githubLogin" || r.URL.Path == "/birthdays/githubCallback" || r.URL.Path == "/birthdays/googleLogin" || r.URL.Path == "/birthdays/googleCallback" {
@@ -33,11 +27,15 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 		}
 
 		//check Token vom Request
+
 		//nur für jwt (und die Frage auch, woher er das liest? cookie, session, header?)
 		//if token, err := request.ParseFromRequest(r, request.OAuth2Extractor, emptyKeyFunc); err == nil && token.Valid {
+
+		log.Info("prüfe auf Token in Cookie")
 		if cookie, err := r.Cookie("token_values"); err == nil {
 
 			//falls vorhanden
+			log.Info("Token gefunden")
 			//erzeuge Token aus Informationen in Cookies
 			s := cookie.Value
 			ss := strings.Split(s, "-")
@@ -47,9 +45,7 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 			token.TokenType = ss[2]
 			t := ss[3]
 			token.Expiry, _ = time.Parse(time.RFC3339, t)
-			if debug {
-				fmt.Println("token from cookie: " + token.AccessToken)
-			}
+			log.Debug("Token from Cookie: " + token.AccessToken)
 
 			oauthClient := oauthGithubConf.Client(oauth2.NoContext, token)
 			client := github.NewClient(oauthClient)
@@ -60,10 +56,7 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 				http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 				return
 			}
-			if debug {
-				fmt.Println("user: " + user.GetLogin())
-				fmt.Println(err)
-			}
+			log.Debug("User: " + user.GetLogin())
 
 			//Context Usage
 			//https://joeshaw.org/revisiting-context-and-http-handler-for-go-17/
@@ -73,6 +66,7 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 		} else {
 
 			//falls kein Token vorhanden:
+			log.Info("Kein Token gefunden -> leite auf OAuth-Autorisierung um")
 			redirectToLogin(w, r)
 			//fmt.Println("Authentication failed " + err.Error())
 			//w.WriteHeader(http.StatusForbidden)

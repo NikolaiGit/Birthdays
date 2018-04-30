@@ -2,11 +2,51 @@ package main
 
 import (
 	"net/http"
+	"os"
 
 	"github.com/justinas/alice"
+	log "github.com/sirupsen/logrus"
 )
 
-var debug = true
+//MyLogFormatter ist ein Objekt für das Logging Libary logrus, in welchem eine eigene Timezone gesetzt werden kann
+type MyLogFormatter struct {
+	log.Formatter
+}
+
+//Format ist die zugehörige Methode zu MyLogFormatter
+func (u MyLogFormatter) Format(e *log.Entry) ([]byte, error) {
+	e.Time = e.Time.UTC()
+	return u.Formatter.Format(e)
+}
+
+func init() {
+
+	// INIT Logging //
+
+	//https://github.com/Sirupsen/logrus
+
+	// Log as JSON instead of the default ASCII formatter.
+	//log.SetFormatter(&log.JSONFormatter{})
+	log.SetFormatter(MyLogFormatter{&log.TextFormatter{}})
+
+	// Output to stdout instead of the default stderr
+	// Can be any io.Writer, see below for File example
+	log.SetOutput(os.Stdout)
+
+	// Only log the warning severity or above.
+	log.SetLevel(log.DebugLevel)
+
+	/* Log Levels
+	log.Debug("Useful debugging information.")
+	log.Info("Something noteworthy happened!")
+	log.Warn("You should probably take a look at this.")
+	log.Error("Something failed but I'm not quitting.")
+	// Calls os.Exit(1) after logging
+	log.Fatal("Bye.")
+	// Calls panic() after logging
+	log.Panic("I'm bailing.")
+	*/
+}
 
 //Birthday struct für die Geburtstage
 type Birthday struct {
@@ -34,7 +74,8 @@ func (v ContextValue) Set(value string) {
 
 func main() {
 	//http.ListenAndServe(":9090", &MyMux{})
-
+	log.Info("Applikation hört auf :9090")
 	http.Handle("/", alice.New(requireTokenAuthentication).ThenFunc(muxer))
 	http.ListenAndServe(":9090", nil)
+
 }

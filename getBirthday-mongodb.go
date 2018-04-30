@@ -1,12 +1,12 @@
 package main
 
 import (
-	"fmt"
-
+	log "github.com/sirupsen/logrus"
 	mgo "gopkg.in/mgo.v2"
 )
 
 func getAllBirthdays(kalender string) (results []Birthday) {
+	log.Debug("Methode: getAllBirthdays()")
 	session, err := mgo.DialWithInfo(MongoDBDialInfo)
 	if err != nil {
 		panic(err)
@@ -22,7 +22,8 @@ func getAllBirthdays(kalender string) (results []Birthday) {
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println("Results All: ", results)
+		log.Debug("Results All: ", results)
+		log.Info("Daten aus der Datenbank erhalten")
 		return
 	}
 }
