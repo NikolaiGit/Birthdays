@@ -9,7 +9,8 @@ func getAllBirthdays(kalender string) (results []Birthday) {
 	log.Debug("Methode: getAllBirthdays()")
 	session, err := mgo.DialWithInfo(MongoDBDialInfo)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
@@ -20,10 +21,11 @@ func getAllBirthdays(kalender string) (results []Birthday) {
 	//get all Results for this calendar
 	err = c.Find(nil).Sort("-Date").All(&results)
 	if err != nil {
-		panic(err)
-	} else {
-		log.Debug("Results All: ", results)
-		log.Info("Daten aus der Datenbank erhalten")
+		log.Error(err)
 		return
 	}
+
+	log.Debug("Results All: ", results)
+	log.Info("Daten aus der Datenbank erhalten")
+	return
 }

@@ -1,17 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"net/http"
 	"os"
 	"path/filepath"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func saveBirthday(w http.ResponseWriter, r *http.Request) {
-	fmt.Print("method:", r.Method) //get request method
-	fmt.Println(" path", r.URL.Path)
 	if r.Method == "GET" {
 		saveBirthdayReturnFormHTML(w, r)
 	}
@@ -23,8 +22,7 @@ func saveBirthday(w http.ResponseWriter, r *http.Request) {
 			// Handle error here via logging and then return
 		}
 
-		fmt.Println("Name:", r.PostFormValue("name"))
-		fmt.Println("Birthday:", r.PostFormValue("birthday"))
+		log.Debug("Speichere Geburtstag für: " + r.PostFormValue("name"))
 
 		birthdate := Birthday{string(r.PostFormValue("name")), string(r.PostFormValue("birthday"))}
 
@@ -62,10 +60,19 @@ func saveBirthdayReturnFormHTML(w http.ResponseWriter, r *http.Request) {
 
 func saveBirthdayResponse(w http.ResponseWriter, r *http.Request, b Birthday) {
 	//if m, _ := regexp.MatchString("application/json", r.Header.Get("Content-type")); !m {
-	json, err := json.Marshal(b)
+	/*json, err := json.Marshal(b)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	fmt.Fprintf(w, string(json))
+	fmt.Fprintf(w, string(json))*/
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	//w.Header().Set("Content-Type", "text/javascript; charset=utf-8")
+	//fmt.Fprintf(w, "Den Benutzer "+b.Name+"erfoglreich gespeichert")
+	fmt.Fprintf(w, b.Name)
+	//<h1>Test</h1>
+	//<script type=\"text/javascript\">alert(\"HAHA\");</script>
+	//skriptausfürhung wird durch Chrome verhindert
+	//XSS-Auditor
+	//https://www.virtuesecurity.com/blog/understanding-xss-auditor/
 }

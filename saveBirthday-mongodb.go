@@ -1,12 +1,16 @@
 package main
 
-import mgo "gopkg.in/mgo.v2"
+import (
+	log "github.com/sirupsen/logrus"
+	mgo "gopkg.in/mgo.v2"
+)
 
 func persistBirthday(b Birthday, kalender string) {
 
 	session, err := mgo.DialWithInfo(MongoDBDialInfo)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 
 	defer session.Close()
@@ -18,7 +22,8 @@ func persistBirthday(b Birthday, kalender string) {
 
 	err = c.Insert(&b)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		return
 	}
 
 }

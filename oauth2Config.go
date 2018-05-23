@@ -16,23 +16,30 @@ var authServer = "Github"
 
 //Nicht-Blatt-Handler
 func requireTokenAuthentication(inner http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(resp http.ResponseWriter, req *http.Request) {
 
-		log.Info(r.Method + "-Request auf " + r.URL.Path + " von " + r.RemoteAddr)
+		log.Info(req.Method + "-Request auf " + req.URL.Path + " von " + req.RemoteAddr)
 
+		//
+		//
+		//
 		//keine Autorisierung für folgende Pfade nötig
-		if r.URL.Path == "/birthdays/githubLogin" || r.URL.Path == "/birthdays/githubCallback" || r.URL.Path == "/birthdays/googleLogin" || r.URL.Path == "/birthdays/googleCallback" {
-			inner.ServeHTTP(w, r)
+		if req.URL.Path == "/birthdays/githubLogin" || req.URL.Path == "/birthdays/githubCallback" || req.URL.Path == "/birthdays/googleLogin" || req.URL.Path == "/birthdays/googleCallback" {
+			inner.ServeHTTP(resp, req)
 			return
 		}
+		//
+		//
+		//
 
+		//
+		//
+		//
 		//check Token vom Request
 
-		//nur für jwt (und die Frage auch, woher er das liest? cookie, session, header?)
-		//if token, err := request.ParseFromRequest(r, request.OAuth2Extractor, emptyKeyFunc); err == nil && token.Valid {
-
 		log.Info("prüfe auf Token in Cookie")
-		if cookie, err := r.Cookie("token_values"); err == nil {
+
+		if cookie, err := req.Cookie("oauth_token"); err == nil {
 
 			//falls vorhanden
 			log.Info("Token gefunden")
@@ -53,7 +60,7 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 			if err != nil {
 				fmt.Printf("client.Users.Get() failed with '%s'\n", err)
 				//TODO check if refreshtoken nutzbar
-				http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
+				http.Redirect(resp, req, "/", http.StatusTemporaryRedirect)
 				return
 			}
 			log.Debug("User: " + user.GetLogin())
@@ -61,19 +68,19 @@ func requireTokenAuthentication(inner http.Handler) http.Handler {
 			//Context Usage
 			//https://joeshaw.org/revisiting-context-and-http-handler-for-go-17/
 			context := context.WithValue(oauth2.NoContext, ContextKey("username"), ContextValue{user.GetLogin()})
-			r = r.WithContext(context)
+			req = req.WithContext(context)
 
 		} else {
 
 			//falls kein Token vorhanden:
 			log.Info("Kein Token gefunden -> leite auf OAuth-Autorisierung um")
-			redirectToLogin(w, r)
+			redirectToLogin(resp, req)
 			//fmt.Println("Authentication failed " + err.Error())
 			//w.WriteHeader(http.StatusForbidden)
 			return
 		}
 
-		inner.ServeHTTP(w, r)
+		inner.ServeHTTP(resp, req)
 	})
 	//brauch ich nicht, da obe in zweiter Zeile returned wird
 	//return http.HandlerFunc(fn)
@@ -93,6 +100,33 @@ func redirectToLogin(w http.ResponseWriter, r *http.Request) {
 
 	}
 }
+
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
+//
 
 func getAuthenticationInformation(inner http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

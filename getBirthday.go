@@ -19,6 +19,7 @@ func getBirthday(w http.ResponseWriter, r *http.Request) {
 	json, err := json.Marshal(allBirthdays)
 	if err != nil {
 		fmt.Println(err)
+		fmt.Fprintf(w, err.Error())
 		return
 	}
 
